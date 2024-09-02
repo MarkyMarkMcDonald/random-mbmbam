@@ -22,3 +22,11 @@
 .container-narrow > hr {
   margin: 30px 0;
 }
+
+label {
+  font-weight: normal;
+}
+
+#minimum-episode {
+  width: 100px;
+}

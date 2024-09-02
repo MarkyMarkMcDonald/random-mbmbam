@@ -1,4 +1,6 @@
 $(function() {
+  $.fn.reverse = Array.prototype.reverse;
+
   var xmlDoc = new Promise(function(resolve, reject) {
     $.get("mbmbam-feed.xml", resolve);
   });
@@ -7,6 +9,7 @@ $(function() {
     var rss = doc.documentElement;
     return $(rss)
       .find("channel > item")
+      .reverse()
       .map(function(i, item) {
         var $item = $(item);
 
@@ -28,6 +31,8 @@ $(function() {
           .toLowerCase()
           .includes("bro's better, bro's best");
 
+        ret.episodeNumber = i + 1;
+
         return ret;
       });
   });
@@ -38,17 +43,25 @@ $(function() {
   var audio = document.getElementById("audio-player");
   var source = document.getElementById("audio-source");
 
+
   episodes.then(function(episodes) {
     function loadNextEpisode() {
-      var live = $("#live-show-toggle").is(":checked");
-      var compilation = $("#compilation-toggle").is(":checked");
-      var skip_intro = $("#skip-intro-toggle").is(":checked");
+      var $liveToggle = $("#live-show-toggle");
+      var $compilationToggle = $("#compilation-toggle");
+      var $skipToggle = $("#skip-intro-toggle");
+      var $minimumEpisode = $("#minimum-episode");
+
+      var live = $liveToggle.is(":checked");
+      var compilation = $compilationToggle.is(":checked");
+      var skip_intro = $skipToggle.is(":checked");
+      var rawMinEpisode = $minimumEpisode.val() || 1;
+      var minimumEpisode = Math.min(Math.max(parseInt(rawMinEpisode, 10), 1), episodes.length);
 
       while (true) {
         ++ep_index;
         var ep = episodes[ep_index % episodes.length];
 
-        if ((ep.live && !live) || (ep.compilation && !compilation)) {
+        if ((ep.live && !live) || (ep.compilation && !compilation) || ep.episodeNumber < minimumEpisode) {
           console.log("Skipping '%s'...", ep.title);
           continue;
         }
