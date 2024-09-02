@@ -1,3 +1,14 @@
+function trackState(searchParams, $node, paramKey, valueSetter, valueGetter) {
+  if (searchParams.get(paramKey)) {
+    valueSetter(searchParams.get(paramKey))
+  }
+  $node.on('change', function() {
+    debugger;
+    searchParams.set(paramKey, valueGetter());
+    history.replaceState({}, "", "?" + searchParams.toString());
+  })
+}
+
 $(function() {
   $.fn.reverse = Array.prototype.reverse;
 
@@ -12,37 +23,26 @@ $(function() {
 
   var searchParams = new URLSearchParams(window.location.search);
 
-  if (searchParams.get("liveShows")) {
-    $liveShowToggle.prop('checked', searchParams.get("liveShows") === 'true');
-  }
-  $liveShowToggle.on('change', function() {
-    searchParams.set('liveShows', $(this).is(":checked"));
-    history.replaceState({}, "", "?" + searchParams.toString());
-  })
-
-  if (searchParams.get("compilations")) {
-    $compilationToggle.prop('checked', searchParams.get("compilations") === 'true');
-  }
-  $compilationToggle.on("change", function() {
-    searchParams.set("compilations", $(this).is(":checked"));
-    history.replaceState({}, "", "?" + searchParams.toString());
-  })
-
-  if (searchParams.get("skipIntro")) {
-    $skipIntroToggle.prop('checked', searchParams.get("skipIntro") === 'true');
-  }
-  $skipIntroToggle.on("change", function() {
-    searchParams.set("skipIntro", $(this).is(":checked"));
-    history.replaceState({}, "", "?" + searchParams.toString());
-  })
-
-  if (searchParams.get("minimumEpisode")) {
-    $minimumEpisode.val(parseInt(searchParams.get("minimumEpisode"), 10));
-  }
-  $minimumEpisode.on("change", function() {
-    searchParams.set("minimumEpisode", $(this).val());
-    history.replaceState({}, "", "?" + searchParams.toString());
-  })
+  trackState(
+      searchParams, $liveShowToggle, "liveShows",
+      function(value) {$liveShowToggle.prop('checked', value === 'true')},
+      function() {return $liveShowToggle.is(":checked")}
+  )
+  trackState(
+      searchParams, $compilationToggle, "compilations",
+      function(value) {$compilationToggle.prop('checked', value === 'true')},
+      function() {return $compilationToggle.is(":checked")}
+  )
+  trackState(
+      searchParams, $skipIntroToggle, "skipIntro",
+      function(value) {$skipIntroToggle.prop('checked', value === 'true')},
+      function() {return $skipIntroToggle.is(":checked")}
+  )
+  trackState(
+      searchParams, $minimumEpisode, "minimumEpisode",
+      function(value) {$minimumEpisode.val(parseInt(value, 10))},
+      function() {return $minimumEpisode.val()}
+  )
 
   var episodes = xmlDoc.then(function(doc) {
     var rss = doc.documentElement;
